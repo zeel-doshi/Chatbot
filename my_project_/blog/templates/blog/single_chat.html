@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Interface</title>
+  <style>
+    body {
+      background-color: #333; /* Dark background */
+      color: #eee; /* Light text */
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #chatbot-container {
+      width: 100%;
+      max-width: 800px; /* Limiting width for better readability */
+      margin: 20px auto; /* Centering the chatbot */
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      background-color: #444; /* Dark grey chatbot container */
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+      overflow: hidden;
+    }
+
+    h1 {
+      text-align: center;
+      color: #eee; /* Light grey heading */
+      margin: 0;
+      padding: 20px;
+      background-color: #555; /* Darker grey background for title */
+      border-bottom: 1px solid #666; /* Subtle border below title */
+    }
+
+    #chatbot {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto; /* Enable vertical scrolling */
+      display: flex;
+      flex-direction: column;
+    }
+
+    .botText, .userText {
+      display: inline-block; /* Make message clouds adjust to content */
+      max-width: 75%; /* Limiting width of message clouds */
+      font-size: 16px;
+      margin: 10px 0; /* Spacing between messages */
+      padding: 10px 15px;
+      border-radius: 20px;
+      line-height: 1.5;
+      word-wrap: break-word; /* Ensure text wraps within the message cloud */
+    }
+
+    .botText {
+      background-color: #78909c; /* Dark grey for bot messages */
+      color: #fff; /* White text for bot messages */
+      align-self: flex-start; /* Align bot messages to the left */
+    }
+
+    .userText {
+      background-color: #64b5f6; /* Blue for user messages */
+      color: #333; /* Dark text for user messages */
+      align-self: flex-end; /* Align user messages to the right */
+    }
+
+    #userInput {
+      display: flex; /* Use flexbox for input and button alignment */
+      padding: 20px;
+      border-top: 1px solid #666; /* Dark grey border at the top */
+    }
+
+    #textInput {
+      flex: 1; /* Take up remaining space */
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #666; /* Dark grey border */
+      border-radius: 5px;
+      color: #eee; /* Light text color */
+      background-color: #555; /* Darker grey input background */
+    }
+
+    #buttonInput {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #0288d1; /* Blue send button */
+      color: #fff; /* White text for button */
+      cursor: pointer;
+      margin-left: 10px; /* Space between input and button */
+    }
+
+    #buttonInput:hover {
+      background-color: #0277bd; /* Darker blue on hover */
+    }
+  </style>
+</head>
+<body>
+  <div id="chatbot-container">
+    <h1>Chat Interface</h1>
+    <div id="chatbot">
+      <div class="botText">
+        Hello, what can I help you with today?
+      </div>
+    </div>
+    <div id="userInput">
+      <input id="textInput" type="text" placeholder="Type your message...">
+      <button id="buttonInput" type="button">Send</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chatgpt-demo/');
+
+      chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageList = document.querySelector('#chatbot');
+        const newMessage = document.createElement('div');
+        newMessage.classList.add('botText');
+        newMessage.textContent = data.message;
+        messageList.appendChild(newMessage);
+        messageList.scrollTop = messageList.scrollHeight;
+      };
+
+      chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+      };
+
+      const userInput = document.querySelector('#textInput');
+      const sendButton = document.querySelector('#buttonInput');
+
+      // Function to send message
+      function sendMessage() {
+        const message = userInput.value.trim();
+        if (message === '') return;
+
+        // Display user's message
+        const messageList = document.querySelector('#chatbot');
+        const userMessage = document.createElement('div');
+        userMessage.classList.add('userText');
+        userMessage.textContent = message;
+        messageList.appendChild(userMessage);
+        messageList.scrollTop = messageList.scrollHeight;
+
+        // Send the message to the WebSocket server
+        chatSocket.send(JSON.stringify({
+          'message': message
+        }));
+
+        userInput.value = '';
+      }
+
+      // Send message on button click
+      sendButton.addEventListener('click', sendMessage);
+
+      // Send message on Enter key press
+      userInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+          sendMessage();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

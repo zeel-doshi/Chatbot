@@ -1,0 +1,92 @@
+body {
+  background-color: #ffffff; /* White background */
+  color: #333; /* Dark grey text */
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#chatbot-container {
+  width: 100%;
+  max-width: 800px; /* Limiting width for better readability */
+  margin: 20px auto; /* Centering the chatbot */
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background-color: #f9f9f9; /* Light grey chatbot container */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  overflow: hidden;
+}
+
+h1 {
+  text-align: center;
+  color: #444; /* Slightly darker grey heading */
+  margin: 0;
+  padding: 20px;
+  background-color: #e0e0e0; /* Light grey background for title */
+  border-bottom: 1px solid #ccc; /* Subtle border below title */
+}
+
+#chatbot {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto; /* Enable vertical scrolling */
+  display: flex;
+  flex-direction: column;
+}
+
+.botText, .userText {
+  display: inline-block; /* Make message clouds adjust to content */
+  max-width: 75%; /* Limiting width of message clouds */
+  font-size: 16px;
+  margin: 10px 0; /* Spacing between messages */
+  padding: 10px 15px;
+  border-radius: 20px;
+  line-height: 1.5;
+  word-wrap: break-word; /* Ensure text wraps within the message cloud */
+}
+
+.botText {
+  background-color: #78909c; /* Dark grey for bot messages */
+  color: #ffffff; /* White text for bot messages */
+  align-self: flex-start; /* Align bot messages to the left */
+}
+
+.userText {
+  background-color: #bbdefb; /* Light blue for user messages */
+  color: #0d47a1; /* Dark blue text for user messages */
+  align-self: flex-end; /* Align user messages to the right */
+}
+
+#userInput {
+  display: flex; /* Use flexbox for input and button alignment */
+  padding: 20px;
+  border-top: 1px solid #ccc; /* Light grey border at the top */
+}
+
+#textInput {
+  flex: 1; /* Take up remaining space */
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc; /* Light grey border */
+  border-radius: 5px;
+}
+
+#buttonInput {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #0288d1; /* Blue send button */
+  color: #fff; /* White text for button */
+  cursor: pointer;
+  margin-left: 10px; /* Space between input and button */
+}
+
+#buttonInput:hover {
+  background-color: #0277bd; /* Darker blue on hover */
+}
