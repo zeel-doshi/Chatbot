@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Interface</title>
+  <style>
+    body {
+      background-color: #282c34;
+      color: #f0f0f0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #chatbot-container {
+      width: 100%;
+      max-width: 800px; /* Adjusted width to 800px */
+      margin: 20px auto;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    h1 {
+      text-align: center;
+      color: #61dafb;
+      margin: 0;
+      padding: 20px;
+      background-color: #20232a;
+      border-bottom: 1px solid #30363d;
+      font-weight: 300;
+    }
+
+    #chatbot {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .botText, .userText {
+      display: inline-block;
+      max-width: 75%;
+      font-size: 16px;
+      margin: 10px 0;
+      padding: 15px 20px;
+      border-radius: 20px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .botText {
+      background-color: #444;
+      color: #f0f0f0;
+      align-self: flex-start;
+    }
+
+    .userText {
+      background-color: #61dafb;
+      color: #1e1e1e;
+      align-self: flex-end;
+    }
+
+    .loader {
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px 20px;
+      border-radius: 20px;
+      background-color: #444;
+      color: #f0f0f0;
+      margin: 10px 0;
+    }
+
+    .loader span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin: 0 2px;
+      background-color: #f0f0f0;
+      border-radius: 50%;
+      animation: loader-animation 1s infinite;
+    }
+
+    .loader span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loader span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes loader-animation {
+      0%, 100% {
+        opacity: 0.2;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    #userInput {
+      display: flex;
+      padding: 20px;
+      border-top: 1px solid #30363d;
+      background-color: #20232a;
+    }
+
+    #textInput {
+      flex: 1;
+      padding: 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      color: #f0f0f0;
+      background-color: #282c34;
+      margin-right: 10px;
+    }
+
+    #textInput::placeholder {
+      color: #ccc;
+    }
+
+    #buttonInput {
+      padding: 15px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #61dafb;
+      color: #1e1e1e;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #buttonInput:hover {
+      background-color: #52c7ea;
+    }
+
+    .botName {
+      color: #ccc;
+      font-size: 12px;
+      margin-left: 10px;
+      margin-top: -8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatbot-container">
+    <h1>Welcome to IndiaNIC</h1>
+    <div id="chatbot">
+      <div class="botText" id="initialBotMessage">
+        Hello, what can I help you with today?
+      </div>
+      <div class="botName">
+        IndiaNIC Chatbot
+      </div>
+    </div>
+    <div id="userInput">
+      <input id="textInput" type="text" placeholder="Type your message...">
+      <button id="buttonInput" type="button">Send</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chatgpt-demo/');
+
+      chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageList = document.querySelector('#chatbot');
+        
+        // Hide the loader
+        const loader = document.querySelector('#loader');
+        if (loader) {
+          loader.remove();
+        }
+
+        // Create a new bot message element
+        const botMessage = document.createElement('div');
+        botMessage.classList.add('botText');
+        messageList.appendChild(botMessage);
+
+        // Create a separate element for indicating the bot's identity
+        const botName = document.createElement('div');
+        botName.classList.add('botName');
+        botName.textContent = "IndiaNIC Chatbot";
+        messageList.appendChild(botName);
+
+        // Scroll to the bottom of the chatbot container
+        messageList.scrollTop = messageList.scrollHeight;
+
+        // Typing effect for bot message
+        const words = data.response_message.split(' ');
+        let wordIndex = 0;
+
+        function typeWord() {
+          if (wordIndex < words.length) {
+            botMessage.textContent += (wordIndex > 0 ? ' ' : '') + words[wordIndex];
+            wordIndex++;
+            messageList.scrollTop = messageList.scrollHeight; // Scroll to the bottom again
+            setTimeout(typeWord, 50); // Adjust typing speed here
+          }
+        }
+
+        typeWord();
+      };
+
+      chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+      };
+
+      const userInput = document.querySelector('#textInput');
+      const sendButton = document.querySelector('#buttonInput');
+
+      // Function to send message
+      function sendMessage() {
+        const message = userInput.value.trim();
+        if (message === '') return;
+
+        // Display user's message
+        const messageList = document.querySelector('#chatbot');
+        const userMessage = document.createElement('div');
+        userMessage.classList.add('userText');
+        userMessage.textContent = message;
+        messageList.appendChild(userMessage);
+        messageList.scrollTop = messageList.scrollHeight;
+
+        // Show the loader
+        const loader = document.createElement('div');
+        loader.id = 'loader';
+        loader.classList.add('loader');
+        loader.innerHTML = '<span></span><span></span><span></span>';
+        messageList.appendChild(loader);
+        messageList.scrollTop = messageList.scrollHeight; // Scroll to the bottom again
+
+        // Send the message to the WebSocket server
+        chatSocket.send(JSON.stringify({
+          'message': message
+        }));
+
+        userInput.value = '';
+      }
+
+      // Send message on button click
+      sendButton.addEventListener('click', sendMessage);
+
+      // Send message on Enter key press
+      userInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+          sendMessage();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
